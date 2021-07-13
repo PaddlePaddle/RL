@@ -24,9 +24,9 @@ class ActionMappingWrapper(gym.Wrapper):
         """
         gym.Wrapper.__init__(self, env)
         assert isinstance(self.env.action_space, gym.spaces.Box)
-        self.low_bound = self.env.action_space.low[0]
-        self.high_bound = self.env.action_space.high[0]
-        assert self.high_bound > self.low_bound
+        self.low_bound = self.env.action_space.low
+        self.high_bound = self.env.action_space.high
+        assert np.all(self.high_bound >= self.low_bound)
         if hasattr(env, '_max_episode_steps'):
             self._max_episode_steps = int(self.env._max_episode_steps)
 

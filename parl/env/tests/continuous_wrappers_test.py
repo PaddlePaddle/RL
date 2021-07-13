@@ -20,7 +20,8 @@ from parl.env.continuous_wrappers import ActionMappingWrapper
 
 class MockEnv(gym.Env):
     def __init__(self, low, high):
-        self.action_space = gym.spaces.Box(low=low, high=high, shape=(3, ))
+        self.action_space = gym.spaces.Box(
+            low=np.array(low), high=np.array(high))
         self._max_episode_steps = 1000
 
     def step(self, action):
@@ -34,20 +35,32 @@ class TestActionMappingWrapper(unittest.TestCase):
     def test_action_mapping(self):
         origin_act = np.array([-1.0, 0.0, 1.0])
 
-        env = MockEnv(0.0, 1.0)
+        env = MockEnv([0.0] * 3, [1.0] * 3)
         wrapper_env = ActionMappingWrapper(env)
         wrapper_env.step(origin_act)
         self.assertListEqual(list(env.action), [0.0, 0.5, 1.0])
 
-        env = MockEnv(-2.0, 2.0)
+        env = MockEnv([-2.0] * 3, [2.0] * 3)
         wrapper_env = ActionMappingWrapper(env)
         wrapper_env.step(origin_act)
         self.assertListEqual(list(env.action), [-2.0, 0.0, 2.0])
 
-        env = MockEnv(-5.0, 10.0)
+        env = MockEnv([-5.0] * 3, [10.0] * 3)
         wrapper_env = ActionMappingWrapper(env)
         wrapper_env.step(origin_act)
         self.assertListEqual(list(env.action), [-5.0, 2.5, 10.0])
+
+        # test low bound or high bound is different in different dimensions.
+        env = MockEnv([0.0, -2.0, -5.0], [1.0, 2.0, 10.0])
+        wrapper_env = ActionMappingWrapper(env)
+        wrapper_env.step(origin_act)
+        self.assertListEqual(list(env.action), [0.0, 0.0, 10.0])
+
+        origin_act = np.array([0.0, 0.0, 0.0])
+        env = MockEnv([0.0, -2.0, -5.0], [1.0, 2.0, 10.0])
+        wrapper_env = ActionMappingWrapper(env)
+        wrapper_env.step(origin_act)
+        self.assertListEqual(list(env.action), [0.5, 0.0, 2.5])
 
 
 if __name__ == '__main__':
