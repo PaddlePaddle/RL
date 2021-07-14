@@ -274,7 +274,8 @@ class TestEnv(gym.Wrapper):
         self._eval_episodes = eval_episodes
         self._was_real_done = False
         self._eval_rewards = None
-        self._end_episode = len(env.get_episode_rewards()) + eval_episodes
+        self._end_episode = len(
+            self._monitor.get_episode_rewards()) + eval_episodes
 
     def step(self, action):
         ob, reward, done, info = self._env.step(action)
@@ -303,12 +304,20 @@ class TestEnv(gym.Wrapper):
         return len(self._monitor.get_episode_rewards())
 
 
-def wrap_deepmind(env, dim=84, framestack=True, obs_format='NHWC', test=False):
+def wrap_deepmind(env,
+                  dim=84,
+                  framestack=True,
+                  obs_format='NHWC',
+                  test=False,
+                  eval_episodes=3):
     """Configure environment for DeepMind-style Atari.
 
     Args:
         dim (int): Dimension to resize observations to (dim x dim).
         framestack (bool): Whether to framestack observations.
+        obs_format (str): observation output format
+        test (bool): whether this is a test env
+        eval_episodes (int): when test, number of episodes for each evaluation
     """
     env = MonitorEnv(env)
     env = NoopResetEnv(env, noop_max=30)
@@ -322,5 +331,5 @@ def wrap_deepmind(env, dim=84, framestack=True, obs_format='NHWC', test=False):
     if framestack:
         env = FrameStack(env, 4, obs_format)
     if test:
-        env = TestEnv(env)
+        env = TestEnv(env, eval_episodes)
     return env
