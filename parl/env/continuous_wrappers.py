@@ -23,7 +23,12 @@ class ActionMappingWrapper(gym.Wrapper):
         [low_bound, high_bound].
         """
         gym.Wrapper.__init__(self, env)
-        assert isinstance(self.env.action_space, gym.spaces.Box)
+        assert hasattr(
+            self.env.action_space,
+            'low'), 'action space should be instance of gym.spaces.Box'
+        assert hasattr(
+            self.env.action_space,
+            'high'), 'action space should be instance of gym.spaces.Box'
         self.low_bound = self.env.action_space.low[0]
         self.high_bound = self.env.action_space.high[0]
         assert self.high_bound > self.low_bound

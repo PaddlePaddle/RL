@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -ex
 
 function init() {
     RED='\033[0;31m'
@@ -24,6 +25,24 @@ function init() {
     source ~/.bashrc
     export PATH="/root/miniconda3/bin:$PATH"
     export LD_LIBRARY_PATH="/usr/local/TensorRT-6.0.1.5/lib:$LD_LIBRARY_PATH"
+}
+
+function run_example_test {
+    for exp in QuickStart DQN DQN_variant PPO SAC TD3 OAC DDPG
+    do
+        cp parl/tests/gym.py examples/${exp}/
+    done
+
+    python examples/QuickStart/train.py
+    python examples/DQN/train.py
+    python examples/DQN_variant/train.py --train_total_steps 5000 --algo DQN --env PongNoFrameskip-v4
+    python examples/DQN_variant/train.py --train_total_steps 5000 --algo DDQN --env PongNoFrameskip-v4
+    python examples/DQN_variant/train.py --train_total_steps 5000 --dueling True --env PongNoFrameskip-v4
+    python examples/PPO/train.py --train_total_steps 5000 --env HalfCheetah-v1
+    python examples/SAC/train.py --train_total_steps 5000 --env HalfCheetah-v1
+    python examples/TD3/train.py --train_total_steps 5000 --env HalfCheetah-v1
+    python examples/OAC/train.py --train_total_steps 5000 --env HalfCheetah-v1
+    python examples/DDPG/train.py --train_total_steps 5000 --env HalfCheetah-v1
 }
 
 function print_usage() {
@@ -143,13 +162,6 @@ function run_test_with_fluid() {
     done
 }
 
-function run_cartpole_test {
-    for exp in QuickStart DQN
-    do
-        python examples/${exp}/train.py
-    done
-}
-
 function run_import_test {
     export CUDA_VISIBLE_DEVICES=""
 
@@ -237,7 +249,8 @@ function main() {
             pip install -r .teamcity/requirements.txt
             pip install /data/paddle_package/paddlepaddle_gpu-2.1.0.post101-cp38-cp38-linux_x86_64.whl
             run_test_with_gpu $env
-            run_cartpole_test $env
+            pip install tqdm # for example test
+            run_example_test $env
 
             run_test_with_fluid
             ############
